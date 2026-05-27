@@ -16,6 +16,7 @@
 }
 
 html {
+  font-size: 75%;
   scroll-behavior: smooth;
 }
 
@@ -70,7 +71,7 @@ main {
   flex-direction: column;
   gap: 1.05rem;
   position: fixed;
-  right: clamp(1rem, 2vw, 1.7rem);
+  left: clamp(1rem, 2vw, 1.7rem);
   top: 50%;
   transform: translateY(-50%);
   z-index: 20;
@@ -103,10 +104,10 @@ main {
   padding: 0.4rem 0.65rem;
   pointer-events: none;
   position: absolute;
-  right: 1.45rem;
+  left: 1.45rem;
   rotate: -45deg;
   text-transform: uppercase;
-  transform: translateX(0.35rem);
+  transform: translateX(-0.35rem);
   transition:
     opacity 180ms ease,
     transform 180ms ease;
