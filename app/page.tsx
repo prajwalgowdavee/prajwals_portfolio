@@ -190,7 +190,7 @@ export default function Home() {
         <p className="eyebrow">Contact</p>
         <h2>Let&apos;s build something intelligent.</h2>
         <div className="contact-panel">
-          <form action="mailto:prajwal@example.com" method="post" encType="text/plain">
+          <form action="mailto:prajwalgowdads2709@gmail.com" method="post" encType="text/plain">
             <label>
               Name
               <input name="name" placeholder="Your name" type="text" />
@@ -209,7 +209,7 @@ export default function Home() {
           </form>
           <div className="direct-contact">
             <p>Prefer email?</p>
-            <a href="mailto:prajwal@example.com">prajwal@example.com</a>
+            <a href="mailto:prajwalgowdads2709@gmail.com">prajwalgowdads2709@gmail.com</a>
           </div>
         </div>
       </section>
