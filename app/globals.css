@@ -52,13 +52,16 @@ main {
   position: relative;
 }
 
+.billboard-scroll {
+  position: relative;
+}
+
 .section-shell {
   align-items: center;
   display: grid;
   gap: 3rem;
   min-height: 100vh;
   padding: 7rem clamp(1.4rem, 5vw, 6rem);
-  position: relative;
 }
 
 .section-shell:not(.hero) {
