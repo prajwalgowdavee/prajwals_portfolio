@@ -45,15 +45,43 @@ const navLabels: Record<string,string> = {
 };
 
 const skills = [
-  "Machine Learning","Python","LLMs","Prompt Engineering",
-  "Vector Databases","RAG Systems","Deep Learning","Data Pipelines",
-  "APIs","Model Evaluation","MLOps","Automation",
+  "Agentic AI",
+  "LangChain",
+  "LangGraph",
+  "LLMOps",
+  "vLLM",
+  "Model Context Protocol (MCP)",
+  "RAG Systems and Vector DB",
+  "LoRA / QLoRA",
+  "Machine Learning",
+  "Deep Learning",
+  "PyTorch",
+  "TensorFlow",
+  "Python",
+  "FastAPI",
+  "Docker",
+  "PostgreSQL"
 ];
 
 const projects = [
-  { title: "RAG Knowledge Assistant",  description: "A retrieval-augmented AI assistant that turns private documents into fast, cited answers for teams.", stack: "LLMs / Embeddings / Vector Search", href: "#contact" },
-  { title: "AI Workflow Copilot",       description: "Automation layer that connects APIs, summarizes decisions, and helps teams reduce repetitive knowledge work.", stack: "Python / Agents / APIs", href: "#contact" },
-  { title: "ML Insight Dashboard",      description: "A model-monitoring dashboard for tracking quality signals, drift patterns, and business-facing outcomes.", stack: "ML / Analytics / Visualization", href: "#contact" },
+  { 
+    title: "Sundae: Privacy first Personal Agentic AI Assistant", 
+    description: "A 2-layer orchestrated assistant using local Qwen3.6 via AirLLM and cloud LLMs. Features Neo4j graph memory, hybrid RAG, web scraping with Dockling, TTS/STT, and a WhatsApp interface.", 
+    stack: "LangGraph / MCP / AirLLM / Neo4j / Obsidian", 
+    href: "https://github.com/prajwalgowdavee/sundae" 
+  }, 
+  { 
+    title: "Deep-Learning Based Early Diagnosis of ASD", 
+    description: "Published research (MLIP-2025) featuring a multi-modal DL pipeline. Built using hyperparameter-tuned SVC, Custom-FFNNs, and CNNs to analyze gene expression, fMRI, and facial imagery.", 
+    stack: "TensorFlow / PyTorch / PyCaret / SMOTE / OpenCV", 
+    href: "https://github.com/prajwalgowdavee/asd-multimodal" 
+  }, 
+  { 
+    title: "AquaVision: Marine Creatures & Waste Detection", 
+    description: "Real-time computer vision system utilizing EfficientNetB7 for sea creature classification and YOLOv8 for oceanic trash detection to aid in marine biodiversity research.", 
+    stack: "YOLOv8 / EfficientNetB7 / OpenCV", 
+    href: "https://github.com/prajwalgowdavee/AquaVision1.0" 
+  }
 ];
 
 // ─── EXPERIENCE DATA ──────────────────────────────────────────────────────────
@@ -64,32 +92,35 @@ const EXPERIENCE_DETAILS: Record<string,ExperienceData> = {
   tata: {
     company: "Tata Steel",
     imageSrc: "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=400&h=400&fit=crop",
-    roles: [{
-      title: "AI Intern", period: "Jan 2024 - Jun 2024",
-      bullets: [
-        "Developed computer vision models for product quality defect detection, reducing manual inspection cycles.",
-        "Implemented structural anomaly detection pipelines on heavy machinery telemetry using isolation forests.",
-        "Partnered with R&D teams to streamline edge deployment and latency monitoring pipelines.",
-      ],
-    }],
+    roles: [
+      {
+        title: "Data Analyst Intern", 
+        period: "Oct 2024 - Nov 2024",
+        bullets: [
+          "Conducted EDA on large-scale operational datasets to surface KPI anomalies and resource utilisation patterns, delivering findings as Tableau and Excel reports to the Data Science team.",
+        ],
+      }
+    ],
   },
   tejas: {
     company: "Tejas Networks",
     imageSrc: "https://images.unsplash.com/photo-1544197150-b99a580bb7a8?q=80&w=400&h=400&fit=crop",
     roles: [
       {
-        title: "AI Engineer R&D", period: "Jul 2025 - Present",
+        title: "AI Engineer R&D", 
+        period: "Aug 2025 - Present",
         bullets: [
-          "Architecting custom generative AI pipelines and custom RAG architectures for telecommunication edge operations.",
-          "Deploying and optimization-tuning lightweight LLMs to parse and interpret deep, real-time hardware telemetry.",
-          "Building multi-agent workspaces for log parsing and automated network diagnostic resolution.",
+          "Architected a multi-agent AI from scratch, reducing average response latency to ~5s on a single entry-level GPU by tuning vLLM inference, custom routing, Redis caching, auto-scaling, and Langfuse observability across a 3-level agent orchestration stack.",
+          "Engineered LangGraph state-machine-based dynamic report generation and on-demand dashboard/chart creation from natural language queries, eliminating manual reporting workflows.",
+          "Delivered full project ownership in vanilla Python + selective LangChain/LangGraph, designing dynamic agent routing, persistent memory, and fallback logic across all platform layers.",
         ],
       },
       {
-        title: "AI Intern", period: "Jan 2025 - Jun 2025",
+        title: "AI Engineer Intern", 
+        period: "Jan 2025 - Aug 2025",
         bullets: [
-          "Constructed proof-of-concept AI troubleshooting agents to process fiber optical transport network telemetry alarms.",
-          "Devised indexing processes utilizing state-of-the-art text embeddings to enhance context-retrieval accuracy.",
+          "Deployed custom offline RAG pipeline achieving 97% answer accuracy with sub-second retrieval - serving SOPs, and tech docs with zero external API dependency by combining semantic chunking, OCR metadata extraction, embedding, and reranking.",
+          "Improved retrieval precision significantly over baseline vector search by building custom retrievers with dynamic document chunking and multi-stage reranking, integrated as a dedicated retrieval agent in the multi-agent platform.",
         ],
       },
     ],
@@ -479,7 +510,9 @@ function ExperiencePopup({ expId, onClose }: { expId: string; onClose: () => voi
   if (!data) return null;
   const cardRef = useRef<HTMLDivElement>(null);
   const [transformStyle, setTransformStyle] = useState("perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1)");
-  const [expandedIndex, setExpandedIndex]   = useState<number>(0);
+  
+  // 1. Change initial state from 0 to -1 so nothing is expanded by default
+  const [expandedIndex, setExpandedIndex] = useState<number>(-1); 
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!cardRef.current) return;
@@ -502,17 +535,23 @@ function ExperiencePopup({ expId, onClose }: { expId: string; onClose: () => voi
         <div style={{ padding:"1.5rem",transform:"translateZ(20px)",maxHeight:"350px",overflowY:"auto" }} className="card-content-scroll">
           <div style={{ display:"flex",flexDirection:"column",gap:"1rem" }}>
             {data.roles.map((role, idx) => {
-              const isExpanded  = expandedIndex === idx;
-              const hasMultiple = data.roles.length > 1;
+              const isExpanded = expandedIndex === idx;
+              
               return (
                 <div key={idx} style={{ background:"rgba(255,249,238,0.04)",border:isExpanded?"1px solid rgba(186,91,56,0.4)":"1px solid rgba(255,249,238,0.08)",borderRadius:"12px",overflow:"hidden",transition:"all 0.3s ease" }}>
-                  <button onClick={()=>{ if(hasMultiple) setExpandedIndex(isExpanded?-1:idx); }} style={{ width:"100%",background:"none",border:"none",padding:"1rem",display:"flex",justifyContent:"space-between",alignItems:"center",cursor:hasMultiple?"pointer":"default",textAlign:"left",outline:"none" }}>
+                  
+                  {/* 2. Removed `hasMultiple` checks so all items are clickable and show the arrow */}
+                  <button 
+                    onClick={() => setExpandedIndex(isExpanded ? -1 : idx)} 
+                    style={{ width:"100%",background:"none",border:"none",padding:"1rem",display:"flex",justifyContent:"space-between",alignItems:"center",cursor:"pointer",textAlign:"left",outline:"none" }}
+                  >
                     <div>
                       <h4 style={{ margin:0,fontSize:"1.25rem",fontWeight:700,color:isExpanded?"var(--clay)":"#fff9ee",transition:"color 0.2s",fontFamily:"var(--font-sans),sans-serif" }}>{role.title}</h4>
                       <span style={{ fontSize:"0.95rem",color:"var(--muted)",marginTop:"2px",display:"inline-block" }}>{role.period}</span>
                     </div>
-                    {hasMultiple && <span style={{ fontSize:"1rem",color:"var(--clay)",transform:isExpanded?"rotate(180deg)":"rotate(0deg)",transition:"transform 0.2s" }}>▼</span>}
+                    <span style={{ fontSize:"1rem",color:"var(--clay)",transform:isExpanded?"rotate(180deg)":"rotate(0deg)",transition:"transform 0.2s" }}>▼</span>
                   </button>
+
                   <div style={{ maxHeight:isExpanded?"300px":"0px",opacity:isExpanded?1:0,overflow:"hidden",transition:"max-height 0.35s cubic-bezier(0.25,1,0.5,1),opacity 0.3s ease" }}>
                     <div style={{ padding:"0 1rem 1rem 1rem",borderTop:"1px solid rgba(255,249,238,0.05)",paddingTop:"0.75rem" }}>
                       <ul style={{ margin:0,paddingLeft:"1.2rem",color:"rgba(255,249,238,0.75)",fontSize:"1.05rem",lineHeight:"1.5",display:"flex",flexDirection:"column",gap:"0.5rem" }}>
@@ -991,7 +1030,7 @@ export default function Home() {
     </h2>
     
     <p style={{ margin: '0 0 1rem 0' }}>
-      Currently building agentic AI, ML, and DL. No deep lore or favorite part of the stack—I just lock in and get it done.
+      Currently building agentic AI, ML, and DL. No deep lore or favorite part of the stack. I just lock in and get it done.
     </p>
 
     <div style={{ margin: '1rem 0' }}>
@@ -1043,7 +1082,7 @@ export default function Home() {
             handle="prajwalgowdavee"
             status="Building AI Models"
             contactText="Contact Me"
-            avatarUrl="/images/profile.png"
+            avatarUrl="/images/profile_pic.jfif"
             showUserInfo
             enableTilt={true}
             enableMobileTilt
@@ -1101,13 +1140,13 @@ export default function Home() {
       </section>
 
       {/* ── Resume ── */}
-      <section className="section-shell resume-band" id="resume" style={getSectionStyle(5,progress,config)}>
+      <section className="section-shell resume-band" id="resume" style={{ ...getSectionStyle(5,progress,config), background: "transparent", boxShadow: "none", border: "none" }}>
         <div>
           <p className="eyebrow">Resume / CV</p>
           <h2>Need the concise version?</h2>
-          <p>Click this button and it will download it directly.</p>
+          <p>Click the download button to download it directly.</p>
         </div>
-        <a className="button primary" href="/resume.pdf" download>Download Resume</a>
+        <a className="button primary" href="/resume.pdf" download style={{ fontSize: "2rem", padding: "1.5rem 3.5rem" }}>Download Resume</a>
       </section>
 
       {/* ── Contact ── */}
