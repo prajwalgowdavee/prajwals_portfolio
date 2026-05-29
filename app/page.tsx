@@ -1,6 +1,18 @@
 "use client";
 
 import React, { useEffect, useRef, useState, useCallback } from "react";
+import {
+  motion,
+  useMotionValue,
+  useSpring,
+  useTransform,
+  AnimatePresence,
+  type SpringOptions,
+  type MotionValue,
+} from "motion/react";
+// ─── IMPORT PROFILE CARD FROM THE COMPONENTS DIRECTORY ──────────────────────
+import ProfileCard from "./components/ProfileCard";
+import MetallicName from "./components/MetallicName";
 
 // ─── SCROLL CONFIG ────────────────────────────────────────────────────────────
 const DEFAULT_CONFIG = [
@@ -122,7 +134,6 @@ function FireworksOverlay({ onDone }: { onDone: () => void }) {
       }
     }
 
-    // Fire 6 bursts staggered
     const positions = [
       [0.2, 0.3],[0.5, 0.2],[0.8, 0.35],
       [0.35,0.55],[0.65,0.25],[0.5, 0.5],
@@ -143,7 +154,7 @@ function FireworksOverlay({ onDone }: { onDone: () => void }) {
         const p = particles[i];
         p.x  += p.vx;
         p.y  += p.vy;
-        p.vy += 0.12; // gravity
+        p.vy += 0.12;
         p.vx *= 0.98;
         p.alpha -= 0.013;
         if (p.alpha <= 0) { particles.splice(i, 1); continue; }
@@ -213,7 +224,6 @@ function DevModeHUD({
     return () => cancelAnimationFrame(rafRef.current);
   }, []);
 
-  // figure out current section
   const bands = computeBands(config);
   let activeSectionIdx = 0;
   let closestDist = Infinity;
@@ -245,32 +255,23 @@ function DevModeHUD({
         color: "#fff9ee", boxShadow: "0 8px 32px rgba(0,0,0,0.6)",
         backdropFilter: "blur(12px)",
       }}>
-        {/* Header */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}>
           <span style={{ color: "#ba5b38", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", fontSize: "10px" }}>
             ⚡ DEV MODE
           </span>
           <button onClick={handleClose} style={{ background: "none", border: "none", color: "rgba(255,249,238,0.4)", cursor: "pointer", fontSize: "14px", padding: 0, lineHeight: 1 }}>✕</button>
         </div>
-
-        {/* FPS */}
         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.4rem" }}>
           <span style={{ color: "rgba(255,249,238,0.45)" }}>FPS</span>
           <span style={{ color: fps >= 55 ? "#7ec8a0" : fps >= 30 ? "#e8b943" : "#e84040", fontWeight: 700 }}>{fps}</span>
         </div>
-
-        {/* Scroll progress */}
         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.4rem" }}>
           <span style={{ color: "rgba(255,249,238,0.45)" }}>Scroll</span>
           <span style={{ color: "#e8b943", fontWeight: 700 }}>{(progress * 100).toFixed(1)}%</span>
         </div>
-
-        {/* Progress bar */}
         <div style={{ height: "3px", background: "rgba(255,249,238,0.08)", borderRadius: "2px", marginBottom: "0.75rem", overflow: "hidden" }}>
           <div style={{ height: "100%", width: `${progress * 100}%`, background: "var(--clay, #ba5b38)", borderRadius: "2px", transition: "width 0.1s" }} />
         </div>
-
-        {/* Active section */}
         <div style={{ borderTop: "1px solid rgba(255,249,238,0.08)", paddingTop: "0.6rem", marginBottom: "0.4rem" }}>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.25rem" }}>
             <span style={{ color: "rgba(255,249,238,0.45)" }}>Section</span>
@@ -289,8 +290,6 @@ function DevModeHUD({
             <span style={{ color: "#a78bfa" }}>{activeSection.peakScale}</span>
           </div>
         </div>
-
-        {/* All sections mini-list */}
         <div style={{ borderTop: "1px solid rgba(255,249,238,0.08)", paddingTop: "0.6rem" }}>
           {config.map((c, i) => {
             const { start: s, end: e } = bands[i];
@@ -309,7 +308,6 @@ function DevModeHUD({
             );
           })}
         </div>
-
         <div style={{ marginTop: "0.6rem", color: "rgba(255,249,238,0.2)", fontSize: "10px", textAlign: "center" }}>
           Konami activated · scroll to see live data
         </div>
@@ -324,26 +322,24 @@ function DevModeHUD({
 type GooglyEye = { x: number; y: number; size: number; id: number; born: number };
 
 function GooglyEyesOverlay({ onClose }: { onClose: () => void }) {
-  const [eyes, setEyes]       = useState<GooglyEye[]>([]);
-  const [mouse, setMouse]     = useState({ x: -9999, y: -9999 });
+  const [eyes, setEyes]         = useState<GooglyEye[]>([]);
+  const [mouse, setMouse]       = useState({ x: -9999, y: -9999 });
   const [clearing, setClearing] = useState(false);
-  const idRef                 = useRef(0);
+  const idRef                   = useRef(0);
 
-  const MAX_EYES   = 250; 
-  const SPAWN_MS   = 3000; // total spawn window
-  const LINGER_MS  = 600;  // how long full screen holds before clearing
+  const MAX_EYES  = 250;
+  const SPAWN_MS  = 3000;
+  const LINGER_MS = 600;
 
-  // Spawn eye pairs over SPAWN_MS, then clear
   useEffect(() => {
     const timers: ReturnType<typeof setTimeout>[] = [];
 
     for (let i = 0; i < MAX_EYES; i++) {
       const delay = (SPAWN_MS / MAX_EYES) * i + Math.random() * (SPAWN_MS / MAX_EYES) * 0.6;
       timers.push(setTimeout(() => {
-        const size = 12 + Math.random() * 38; // Slightly smaller base radius (12–50px) to accommodate pairs
-        const xMargin = size * 2.2; // Extra padding so the pair doesn't overflow the screen edge
+        const size    = 12 + Math.random() * 38;
+        const xMargin = size * 2.2;
         const yMargin = size * 1.2;
-
         setEyes(prev => [
           ...prev,
           {
@@ -357,7 +353,6 @@ function GooglyEyesOverlay({ onClose }: { onClose: () => void }) {
       }, delay));
     }
 
-    // After all eyes are up, linger then clear
     timers.push(setTimeout(() => {
       setClearing(true);
       setTimeout(onClose, 500);
@@ -366,7 +361,6 @@ function GooglyEyesOverlay({ onClose }: { onClose: () => void }) {
     return () => timers.forEach(clearTimeout);
   }, [onClose]);
 
-  // Track mouse
   useEffect(() => {
     const onMove = (e: MouseEvent) => setMouse({ x: e.clientX, y: e.clientY });
     window.addEventListener("mousemove", onMove);
@@ -377,31 +371,24 @@ function GooglyEyesOverlay({ onClose }: { onClose: () => void }) {
     <div style={{ position: "fixed", inset: 0, zIndex: 9990, pointerEvents: "none" }}>
       <svg style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", overflow: "visible" }}>
         {eyes.map((pair) => {
-          const r = pair.size;
+          const r  = pair.size;
           const pr = r * 0.38;
-          
-          const age = (Date.now() - pair.born) / 120; // for pop-in
+          const age   = (Date.now() - pair.born) / 120;
           const scale = clearing ? 0 : Math.min(1, age);
+          const leftEyeOffset  = -r * 0.95;
+          const rightEyeOffset =  r * 0.95;
 
-          // We space the eyes slightly overlapping (0.95 * r) for a classic comic look
-          const leftEyeOffset = -r * 0.95;
-          const rightEyeOffset = r * 0.95;
-
-          // --- Left Eye Mouse Tracking ---
           const lx = pair.x + leftEyeOffset;
           const ly = pair.y;
-          const lDx = mouse.x - lx;
-          const lDy = mouse.y - ly;
+          const lDx = mouse.x - lx; const lDy = mouse.y - ly;
           const lDist = Math.sqrt(lDx * lDx + lDy * lDy);
           const lMax = r * 0.42;
           const lPx = lDist > 0 ? (lDx / lDist) * Math.min(lDist * 0.35, lMax) : 0;
           const lPy = lDist > 0 ? (lDy / lDist) * Math.min(lDist * 0.35, lMax) : 0;
 
-          // --- Right Eye Mouse Tracking ---
           const rx = pair.x + rightEyeOffset;
           const ry = pair.y;
-          const rDx = mouse.x - rx;
-          const rDy = mouse.y - ry;
+          const rDx = mouse.x - rx; const rDy = mouse.y - ry;
           const rDist = Math.sqrt(rDx * rDx + rDy * rDy);
           const rMax = r * 0.42;
           const rPx = rDist > 0 ? (rDx / rDist) * Math.min(rDist * 0.35, rMax) : 0;
@@ -415,32 +402,19 @@ function GooglyEyesOverlay({ onClose }: { onClose: () => void }) {
               transform={`translate(${pair.x}, ${pair.y}) scale(${scale.toFixed(3)})`}
               style={{ transition: clearing ? "transform 0.4s cubic-bezier(0.4,0,0.2,1)" : "transform 0.15s cubic-bezier(0.25,1,0.5,1)" }}
             >
-              {/* LEFT EYE */}
               <g transform={`translate(${leftEyeOffset}, 0)`}>
-                {/* Eyeball */}
                 <circle r={r} fill="white" stroke="rgba(0,0,0,0.18)" strokeWidth={r * 0.07} />
-                {/* Blood-vessel tint for big eyes */}
                 {r > 40 && <circle r={r * 0.92} fill="rgba(255,220,220,0.18)" />}
-                {/* Iris */}
                 <circle cx={lPx} cy={lPy} r={pr * 1.15} fill={eyeColor} />
-                {/* Pupil */}
                 <circle cx={lPx} cy={lPy} r={pr} fill="#0a0a0a" />
-                {/* Shine */}
                 <circle cx={lPx + pr * 0.32} cy={lPy - pr * 0.32} r={pr * 0.32} fill="white" opacity={0.92} />
                 <circle cx={lPx - pr * 0.18} cy={lPy + pr * 0.22} r={pr * 0.14} fill="white" opacity={0.5} />
               </g>
-
-              {/* RIGHT EYE */}
               <g transform={`translate(${rightEyeOffset}, 0)`}>
-                {/* Eyeball */}
                 <circle r={r} fill="white" stroke="rgba(0,0,0,0.18)" strokeWidth={r * 0.07} />
-                {/* Blood-vessel tint for big eyes */}
                 {r > 40 && <circle r={r * 0.92} fill="rgba(255,220,220,0.18)" />}
-                {/* Iris */}
                 <circle cx={rPx} cy={rPy} r={pr * 1.15} fill={eyeColor} />
-                {/* Pupil */}
                 <circle cx={rPx} cy={rPy} r={pr} fill="#0a0a0a" />
-                {/* Shine */}
                 <circle cx={rPx + pr * 0.32} cy={rPy - pr * 0.32} r={pr * 0.32} fill="white" opacity={0.92} />
                 <circle cx={rPx - pr * 0.18} cy={rPy + pr * 0.22} r={pr * 0.14} fill="white" opacity={0.5} />
               </g>
@@ -458,15 +432,9 @@ function GooglyEyesOverlay({ onClose }: { onClose: () => void }) {
 type KonamiEffect = "fireworks" | "devhud" | "googly";
 
 function KonamiTrigger({
-  effect,
-  progress,
-  config,
-  onDone,
+  effect, progress, config, onDone,
 }: {
-  effect: KonamiEffect;
-  progress: number;
-  config: SectionCfg[];
-  onDone: () => void;
+  effect: KonamiEffect; progress: number; config: SectionCfg[]; onDone: () => void;
 }) {
   if (effect === "fireworks") return <FireworksOverlay onDone={onDone} />;
   if (effect === "devhud")    return <DevModeHUD progress={progress} config={config} onClose={onDone} />;
@@ -534,7 +502,7 @@ function ExperiencePopup({ expId, onClose }: { expId: string; onClose: () => voi
         <div style={{ padding:"1.5rem",transform:"translateZ(20px)",maxHeight:"350px",overflowY:"auto" }} className="card-content-scroll">
           <div style={{ display:"flex",flexDirection:"column",gap:"1rem" }}>
             {data.roles.map((role, idx) => {
-              const isExpanded = expandedIndex === idx;
+              const isExpanded  = expandedIndex === idx;
               const hasMultiple = data.roles.length > 1;
               return (
                 <div key={idx} style={{ background:"rgba(255,249,238,0.04)",border:isExpanded?"1px solid rgba(186,91,56,0.4)":"1px solid rgba(255,249,238,0.08)",borderRadius:"12px",overflow:"hidden",transition:"all 0.3s ease" }}>
@@ -563,27 +531,95 @@ function ExperiencePopup({ expId, onClose }: { expId: string; onClose: () => voi
   );
 }
 
-// ─── DOCK ─────────────────────────────────────────────────────────────────────
-export type DockItemData = { icon: React.ReactNode; label: string; onClick: () => void };
+// ═══════════════════════════════════════════════════════════════════════════════
+// ─── DOCK — motion/react spring-physics magnification ────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════════
+export type DockItemData = {
+  icon: React.ReactNode;
+  label: string;
+  onClick: () => void;
+};
+
+const DOCK_SPRING: SpringOptions = { mass: 0.1, stiffness: 150, damping: 12 };
+const DOCK_BASE_SIZE   = 50;
+const DOCK_MAG_SIZE    = 76;
+const DOCK_DISTANCE    = 180;
+
+type DockItemProps = {
+  item: DockItemData;
+  mouseX: MotionValue<number>;
+};
+
+function DockItem({ item, mouseX }: DockItemProps) {
+  const ref     = useRef<HTMLDivElement>(null);
+  const [hovered, setHovered] = useState(false);
+
+  // Distance from mouse center to this item's center
+  const distance = useTransform(mouseX, (val) => {
+    const rect = ref.current?.getBoundingClientRect() ?? {
+      left: 0,
+      width: DOCK_BASE_SIZE,
+    };
+    return val - rect.left - rect.width / 2;
+  });
+
+  // Map distance → target size
+  const targetSize = useTransform(
+    distance,
+    [-DOCK_DISTANCE, 0, DOCK_DISTANCE],
+    [DOCK_BASE_SIZE, DOCK_MAG_SIZE, DOCK_BASE_SIZE]
+  );
+
+  // Spring-smooth the size
+  const size = useSpring(targetSize, DOCK_SPRING);
+
+  return (
+    <motion.div
+      ref={ref}
+      role="button"
+      tabIndex={0}
+      className="dock-item"
+      style={{ width: size, height: size }}
+      onHoverStart={() => setHovered(true)}
+      onHoverEnd={()   => setHovered(false)}
+      onFocus={()      => setHovered(true)}
+      onBlur={()       => setHovered(false)}
+      onClick={item.onClick}
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") item.onClick(); }}
+      whileTap={{ scale: 0.88 }}
+    >
+      <div className="dock-icon">{item.icon}</div>
+      <AnimatePresence>
+        {hovered && (
+          <motion.div
+            key="label"
+            className="dock-label"
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 4 }}
+            transition={{ duration: 0.15 }}
+          >
+            {item.label}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
+}
 
 function Dock({ items }: { items: DockItemData[] }) {
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const mouseX = useMotionValue(Infinity);
+
   return (
-    <div className="dock-outer">
+    <div
+      className="dock-outer"
+      onMouseMove={(e) => mouseX.set(e.pageX)}
+      onMouseLeave={() => mouseX.set(Infinity)}
+    >
       <div className="dock-panel">
-        {items.map((item, index) => {
-          let scale = 1;
-          if (hoveredIndex !== null) {
-            const d = Math.abs(index - hoveredIndex);
-            if (d === 0) scale = 1.35; else if (d === 1) scale = 1.12;
-          }
-          return (
-            <button key={index} onClick={item.onClick} onMouseEnter={()=>setHoveredIndex(index)} onMouseLeave={()=>setHoveredIndex(null)} className="dock-item" style={{ width:"50px",height:"50px",transform:`scale(${scale})`,transition:"transform 180ms cubic-bezier(0.2,0.8,0.2,1),background-color 0.2s",position:"relative" }}>
-              <div className="dock-icon">{item.icon}</div>
-              {hoveredIndex === index && <div className="dock-label">{item.label}</div>}
-            </button>
-          );
-        })}
+        {items.map((item, i) => (
+          <DockItem key={i} item={item} mouseX={mouseX} />
+        ))}
       </div>
     </div>
   );
@@ -629,7 +665,7 @@ function getSectionStyle(index: number, progress: number, config: SectionCfg[]):
     const t = (norm + 1.2) / (1.2 + plateauStart);
     scale   = 0.04 + (peakScale - 0.04) * (t * t);
     opacity = Math.min(1, t * 1.8); blur = (1 - t) * 2;
-    const factor = (norm - plateauStart) / (-1.2 - plateauStart);
+    const factor   = (norm - plateauStart) / (-1.2 - plateauStart);
     const distance = factor * 350;
     if (origin==="left") tx=-distance; if (origin==="right") tx=distance;
     if (origin==="top")  ty=-distance; if (origin==="bottom") ty=distance;
@@ -639,7 +675,7 @@ function getSectionStyle(index: number, progress: number, config: SectionCfg[]):
     const t = (norm - plateauEnd) / (1.0 - plateauEnd);
     scale   = peakScale + t * (6 - peakScale);
     opacity = Math.max(0, 1 - t * t); blur = t * 5;
-    const factor = (norm - plateauEnd) / (1.0 - plateauEnd);
+    const factor   = (norm - plateauEnd) / (1.0 - plateauEnd);
     const distance = factor * 500;
     if (origin==="left") tx=distance; if (origin==="right") tx=-distance;
     if (origin==="top")  ty=distance; if (origin==="bottom") ty=-distance;
@@ -661,7 +697,12 @@ function getSectionStyle(index: number, progress: number, config: SectionCfg[]):
 }
 
 // ─── DEV PANEL ────────────────────────────────────────────────────────────────
-function DevPanel({ config, onChange, onReset, onResetIndividual }: { config: SectionCfg[]; onChange: (i:number,k:string,v:number|string)=>void; onReset:()=>void; onResetIndividual:(i:number)=>void }) {
+function DevPanel({ config, onChange, onReset, onResetIndividual }: {
+  config: SectionCfg[];
+  onChange: (i: number, k: string, v: number | string) => void;
+  onReset: () => void;
+  onResetIndividual: (i: number) => void;
+}) {
   const [open, setOpen] = useState(true);
   return (
     <div style={{ position:"fixed",bottom:0,right:0,width:280,maxHeight:"85vh",background:"rgba(10,16,12,0.97)",backdropFilter:"blur(12px)",color:"#fff9ee",fontFamily:"'Space Grotesk',monospace",fontSize:11,zIndex:9999,borderRadius:"14px 0 0 0",border:"1px solid rgba(255,249,238,0.1)",borderRight:"none",borderBottom:"none",boxShadow:"0 -8px 40px rgba(0,0,0,0.4)",display:"flex",flexDirection:"column" }}>
@@ -680,18 +721,18 @@ function DevPanel({ config, onChange, onReset, onResetIndividual }: { config: Se
                 <div style={{ fontWeight:700,color:"#ba5b38",letterSpacing:"0.08em",textTransform:"uppercase",fontSize:10 }}>{navLabels[c.id]??c.id}</div>
                 <button onClick={()=>onResetIndividual(i)} style={{ background:"transparent",border:"1px solid rgba(255,249,238,0.2)",color:"rgba(255,249,238,0.5)",borderRadius:4,padding:"2px 6px",cursor:"pointer",fontSize:9 }}>reset</button>
               </div>
-              {[["scale","peakScale",0.3,1.5,0.01],["peak at","peakAt",0.1,0.9,0.05],["scrolls","scrolls",50,300,10]].map(([label,key,min,max,step])=>(
+              {([ ["scale","peakScale",0.3,1.5,0.01], ["peak at","peakAt",0.1,0.9,0.05], ["scrolls","scrolls",50,300,10] ] as const).map(([label,key,min,max,step])=>(
                 <div key={String(key)} style={{ display:"flex",alignItems:"center",gap:6,marginBottom:4 }}>
                   <span style={{ width:44,color:"rgba(255,249,238,0.45)",flexShrink:0 }}>{label}</span>
                   <input type="range" min={Number(min)} max={Number(max)} step={Number(step)} value={c[key as keyof SectionCfg] as number} onChange={e=>onChange(i,String(key),+e.target.value)} style={{ flex:1,accentColor:"#ba5b38" }} />
                   <span style={{ width:34,textAlign:"right",color:"rgba(255,249,238,0.7)",flexShrink:0 }}>{key==="peakAt"?Math.round((c[key as keyof SectionCfg] as number)*100)+"%":String(c[key as keyof SectionCfg])}</span>
                 </div>
               ))}
-              {[["from","origin",ORIGINS],["align","align",ALIGNS]].map(([label,key,opts])=>(
+              {([ ["from","origin",ORIGINS], ["align","align",ALIGNS] ] as const).map(([label,key,opts])=>(
                 <div key={String(key)} style={{ display:"flex",alignItems:"center",gap:6,marginTop:4 }}>
                   <span style={{ width:44,color:"rgba(255,249,238,0.45)",flexShrink:0 }}>{label}</span>
                   <div style={{ display:"flex",gap:3,flexWrap:"wrap" }}>
-                    {(opts as string[]).map(o=><button key={o} onClick={()=>onChange(i,String(key),o)} style={{ padding:"2px 6px",fontSize:10,borderRadius:4,border:"1px solid",cursor:"pointer",background:c[key as keyof SectionCfg]===o?"#ba5b38":"transparent",borderColor:c[key as keyof SectionCfg]===o?"#ba5b38":"rgba(255,249,238,0.2)",color:c[key as keyof SectionCfg]===o?"#fff9ee":"rgba(255,249,238,0.5)" }}>{o}</button>)}
+                    {(opts as readonly string[]).map(o=><button key={o} onClick={()=>onChange(i,String(key),o)} style={{ padding:"2px 6px",fontSize:10,borderRadius:4,border:"1px solid",cursor:"pointer",background:c[key as keyof SectionCfg]===o?"#ba5b38":"transparent",borderColor:c[key as keyof SectionCfg]===o?"#ba5b38":"rgba(255,249,238,0.2)",color:c[key as keyof SectionCfg]===o?"#fff9ee":"rgba(255,249,238,0.5)" }}>{o}</button>)}
                   </div>
                 </div>
               ))}
@@ -714,19 +755,19 @@ export default function Home() {
   const rafRef                    = useRef<number | null>(null);
 
   // Easter egg state
-  const [showIdleNotif, setShowIdleNotif]   = useState(false);
-  const [ctxMenu, setCtxMenu]               = useState<{x:number;y:number}|null>(null);
-  const [konamiEffect, setKonamiEffect]     = useState<KonamiEffect | null>(null);
-  const konamiRef                           = useRef<string[]>([]);
+  const [showIdleNotif, setShowIdleNotif] = useState(false);
+  const [ctxMenu, setCtxMenu]             = useState<{x:number;y:number}|null>(null);
+  const [konamiEffect, setKonamiEffect]   = useState<KonamiEffect | null>(null);
+  const konamiRef                         = useRef<string[]>([]);
   const KONAMI_SEQ = ["ArrowUp","ArrowUp","ArrowDown","ArrowDown","ArrowLeft","ArrowRight","ArrowLeft","ArrowRight","b","a"];
-  const EFFECTS: KonamiEffect[]             = ["fireworks","devhud","googly"];
+  const EFFECTS: KonamiEffect[] = ["fireworks","devhud","googly"];
 
   // Contact form state
-  const [formName, setFormName]         = useState("");
-  const [formEmail, setFormEmail]       = useState("");
-  const [formMessage, setFormMessage]   = useState("");
-  const [formStatus, setFormStatus]     = useState<"idle"|"sending"|"sent"|"error">("idle");
-  const [formError, setFormError]       = useState("");
+  const [formName, setFormName]       = useState("");
+  const [formEmail, setFormEmail]     = useState("");
+  const [formMessage, setFormMessage] = useState("");
+  const [formStatus, setFormStatus]   = useState<"idle"|"sending"|"sent"|"error">("idle");
+  const [formError, setFormError]     = useState("");
 
   const totalVh = config.reduce((a,c) => a + c.scrolls, 0);
 
@@ -773,15 +814,19 @@ export default function Home() {
   // Right-click context menu
   useEffect(() => {
     if (ENABLE_DEV_TOOLS) return;
-    const onCtx = (e: MouseEvent) => { e.preventDefault(); setCtxMenu({ x: e.clientX, y: e.clientY }); };
+    const onCtx   = (e: MouseEvent) => { e.preventDefault(); setCtxMenu({ x: e.clientX, y: e.clientY }); };
     const onClose = () => setCtxMenu(null);
     window.addEventListener("contextmenu", onCtx);
     window.addEventListener("click", onClose);
     window.addEventListener("scroll", onClose, { passive: true });
-    return () => { window.removeEventListener("contextmenu", onCtx); window.removeEventListener("click", onClose); window.removeEventListener("scroll", onClose); };
+    return () => {
+      window.removeEventListener("contextmenu", onCtx);
+      window.removeEventListener("click", onClose);
+      window.removeEventListener("scroll", onClose);
+    };
   }, []);
 
-  // Konami code — picks a random effect each time
+  // Konami code
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       konamiRef.current = [...konamiRef.current, e.key].slice(-10);
@@ -847,10 +892,22 @@ export default function Home() {
     fontFamily: "'Space Grotesk',sans-serif", outline: "none", boxSizing: "border-box",
   };
 
-  const socialItems = [
-    { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{color:"#fff9ee"}}><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>, label: "GitHub",    onClick: () => window.open("https://github.com/prajwalgowdavee","_blank") },
-    { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{color:"#fff9ee"}}><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>, label: "LinkedIn",  onClick: () => window.open("https://www.linkedin.com/in/ds-prajwal-gowda/","_blank") },
-    { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{color:"#fff9ee"}}><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>, label: "@prajwal.btc", onClick: () => window.open("https://www.instagram.com/prajwal.btc/","_blank") },
+  const socialItems: DockItemData[] = [
+    {
+      icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{color:"#fff9ee"}}><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>,
+      label: "GitHub",
+      onClick: () => window.open("https://github.com/prajwalgowdavee","_blank"),
+    },
+    {
+      icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{color:"#fff9ee"}}><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>,
+      label: "LinkedIn",
+      onClick: () => window.open("https://www.linkedin.com/in/ds-prajwal-gowda/","_blank"),
+    },
+    {
+      icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{color:"#fff9ee"}}><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>,
+      label: "@prajwal.btc",
+      onClick: () => window.open("https://www.instagram.com/prajwal.btc/","_blank"),
+    },
   ];
 
   return (
@@ -875,13 +932,15 @@ export default function Home() {
         .dsj_nav .item.lock .txt{color:rgba(0,0,0,0.45)}
         .dsj_nav .txt i{display:inline-block;width:14px;height:14px;background-size:contain;background-repeat:no-repeat;background-position:center;vertical-align:middle;margin-right:4px}
         .dsj_nav .item.lock .txt i{background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23888888"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>')}
-        .dock-outer{margin:2rem auto 0;display:flex;width:100%;align-items:center;justify-content:center;position:relative}
-        .dock-panel{display:flex;align-items:center;justify-content:center;width:fit-content;gap:0.85rem;border-radius:1.25rem;background-color:rgba(10,16,12,0.95);border:1px solid rgba(255,249,238,0.15);padding:0.5rem 0.75rem;box-shadow:0 10px 30px rgba(0,0,0,0.5);height:68px}
-        .dock-item{position:relative;display:inline-flex;align-items:center;justify-content:center;border-radius:12px;background-color:rgba(255,249,238,0.05);border:1px solid rgba(255,249,238,0.1);box-shadow:0 4px 6px -1px rgba(0,0,0,0.1),0 2px 4px -1px rgba(0,0,0,0.06);cursor:pointer;outline:none;padding:0}
-        .dock-item:hover{background-color:rgba(255,249,238,0.1);border-color:var(--clay)}
-        .dock-icon{display:flex;align-items:center;justify-content:center}
-        .dock-label{position:absolute;top:-2.4rem;left:50%;width:fit-content;white-space:pre;border-radius:0.375rem;border:1px solid rgba(255,249,238,0.15);background-color:rgba(10,16,12,0.98);padding:0.25rem 0.5rem;font-size:0.75rem;color:#fff9ee;transform:translateX(-50%);pointer-events:none;font-family:'Space Grotesk',sans-serif;box-shadow:0 4px 12px rgba(0,0,0,0.4);animation:dockLabelFadeIn 0.15s ease-out forwards}
-        @keyframes dockLabelFadeIn{from{opacity:0;transform:translate(-50%,4px)}to{opacity:1;transform:translate(-50%,0)}}
+
+        /* ── Dock ── */
+        .dock-outer{margin:2rem auto 0;display:flex;width:100%;align-items:flex-end;justify-content:center;position:relative;height:90px}
+        .dock-panel{position:absolute;bottom:0;display:flex;align-items:flex-end;gap:10px;padding:8px 14px;border-radius:18px;background-color:rgba(10,16,12,0.92);border:1px solid rgba(255,249,238,0.12);box-shadow:0 10px 40px rgba(0,0,0,0.5),0 1px 0 rgba(255,249,238,0.06) inset;backdrop-filter:blur(20px)}
+        .dock-item{position:relative;display:inline-flex;align-items:center;justify-content:center;border-radius:12px;background-color:rgba(255,249,238,0.06);border:1px solid rgba(255,249,238,0.1);cursor:pointer;outline:none;padding:0;flex-shrink:0;transform-origin:bottom center}
+        .dock-item:hover{background-color:rgba(255,249,238,0.12);border-color:rgba(186,91,56,0.5)}
+        .dock-icon{display:flex;align-items:center;justify-content:center;pointer-events:none}
+        .dock-label{position:absolute;bottom:calc(100% + 10px);left:50%;width:max-content;white-space:nowrap;border-radius:6px;border:1px solid rgba(255,249,238,0.15);background-color:rgba(10,16,12,0.98);padding:0.25rem 0.6rem;font-size:0.75rem;color:#fff9ee;transform:translateX(-50%);pointer-events:none;font-family:'Space Grotesk',sans-serif;box-shadow:0 4px 12px rgba(0,0,0,0.4)}
+
         .contact-form-input:focus{border-color:rgba(186,91,56,0.5)!important;box-shadow:0 0 0 3px rgba(186,91,56,0.1)}
       `}} />
 
@@ -897,22 +956,103 @@ export default function Home() {
       {/* ── Hero ── */}
       <section className="hero section-shell" id="hero" style={getSectionStyle(0,progress,config)}>
         <div className="hero-copy">
-          <p className="eyebrow">Portfolio / AI systems / Useful intelligence</p>
-          <h1 className="hero-name">Prajwal Gowda D S</h1>
+          <p className="eyebrow">Agentic AI / AI systems / Useful intelligence</p>
+          <div style={{ width: "100%", maxWidth: "780px" }}>
+            <MetallicName
+              name="Prajwal Gowda D S"
+              height="185px"
+              seed={7}
+              scale={3.5}
+              speed={0.25}
+              liquid={0.85}
+              brightness={1.8}
+              contrast={0.7}
+              refraction={0.018}
+              blur={0.012}
+              lightColor="#cccccc"
+              darkColor="#050505"
+              tintColor="#8a939e"
+              fresnel={1.2}
+              waveAmplitude={0.9}
+              chromaticSpread={2.5}
+            />
+          </div>
           <p className="title-pill">AI Engineer</p>
-          <p className="hero-tagline">I build AI that feels less like a black box and more like a sharp teammate.</p>
+          <p className="hero-tagline">Scroll to Start</p>
         </div>
       </section>
 
       {/* ── About ── */}
-      <section className="section-shell split" id="about" style={getSectionStyle(1,progress,config)}>
-        <div>
-          <p className="eyebrow">About Me</p>
-          <h2>Curious builder, practical dreamer.</h2>
-          <p>I like working where ideas become tools. My path into AI has been shaped by a simple obsession: take complex systems, make them understandable, and turn them into something people can actually use.</p>
-          <p>I&apos;m especially drawn to LLM products, data-rich workflows, and the craft of making intelligent software feel calm, reliable, and human.</p>
+<section className="section-shell split" id="about" style={getSectionStyle(1,progress,config)}>
+  <div>
+    <p className="eyebrow" style={{ marginBottom: '0.25rem' }}>About Me</p>
+    <h2 style={{ marginBottom: '2.5rem', marginTop: '0.5rem' }}>
+      Just managing ecosystems and running side quests.
+    </h2>
+    
+    <p style={{ margin: '0 0 1rem 0' }}>
+      Currently building agentic AI, ML, and DL. No deep lore or favorite part of the stack—I just lock in and get it done.
+    </p>
+
+    <div style={{ margin: '1rem 0' }}>
+      <p style={{ margin: '0 0 0.5rem 0', fontWeight: 'bold' }}>
+        Current side quests:
+      </p>
+      <ul style={{ listStyleType: 'none', paddingLeft: '0', margin: '0', lineHeight: '1.5' }}>
+        <li style={{ marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <img 
+            src="/images/fih_2.gif" 
+            alt="🐱🐟" 
+            width="24" 
+            height="24" 
+            style={{ 
+              display: 'block', 
+              borderRadius: '50%', 
+              objectFit: 'cover' 
+            }} 
+          />
+          <span>Keeping my fish, cat and aquascapes alive</span>
+        </li>
+        <li style={{ marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          {/* Animated Herb (verified working) */}
+          <picture style={{ display: 'flex', alignItems: 'center' }}>
+            <source srcSet="https://fonts.gstatic.com/s/e/notoemoji/latest/1f33f/512.webp" type="image/webp" />
+            <img src="https://fonts.gstatic.com/s/e/notoemoji/latest/1f33f/512.gif" alt="🌿" width="24" height="24" style={{ display: 'block' }} />
+          </picture>
+          <span>Tending to my garden</span>
+        </li>
+        <li style={{ marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          {/* Retro space invader animation (verified working) */}
+          <picture style={{ display: 'flex', alignItems: 'center' }}>
+            <source srcSet="https://fonts.gstatic.com/s/e/notoemoji/latest/1f47e/512.webp" type="image/webp" />
+            <img src="https://fonts.gstatic.com/s/e/notoemoji/latest/1f47e/512.gif" alt="👾" width="24" height="24" style={{ display: 'block' }} />
+          </picture>
+          <span>PC gaming (lowkey raging)</span>
+        </li>
+      </ul>
+    </div>
+
+    <p style={{ margin: '1rem 0 0 0' }}>
+      Just trying to automate my workflow so I can spend more time staring at my fish tanks.
+    </p>
+  </div>
+        <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+          <ProfileCard
+            name="Prajwal Gowda D S"
+            title="AI Engineer"
+            handle="prajwalgowdavee"
+            status="Building AI Models"
+            contactText="Contact Me"
+            avatarUrl="/images/profile.png"
+            showUserInfo
+            enableTilt={true}
+            enableMobileTilt
+            onContactClick={() => navTo("contact")}
+            behindGlowColor="rgba(186, 91, 56, 0.65)"
+            behindGlowEnabled
+            innerGradient="linear-gradient(145deg, rgba(186, 91, 56, 0.25) 0%, rgba(255, 249, 238, 0.04) 100%)"
+          />
         </div>
-        <div className="photo-placeholder"><span>Photo</span><small>Add your portrait here</small></div>
       </section>
 
       {/* ── Skills ── */}
@@ -1010,9 +1150,7 @@ export default function Home() {
           </div>
         </div>
 
-        <div style={{ marginTop:"0.25rem" }}>
-          <Dock items={socialItems} />
-        </div>
+        <Dock items={socialItems} />
       </section>
 
       {/* ── Meme Cats Game ── */}
