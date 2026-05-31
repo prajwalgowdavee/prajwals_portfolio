@@ -858,8 +858,8 @@ function IdleNotification({ onClose, onContact }: { onClose: () => void; onConta
               <img
                 src="https://fonts.gstatic.com/s/e/notoemoji/latest/1f409/512.gif"
                 alt="🐉"
-                width="33"
-                height="33"
+                width="35"
+                height="35"
                 style={{ display: "block" }}
               />
             </picture>
