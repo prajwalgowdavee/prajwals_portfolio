@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "motion": "^12.40.0",
-    "next": "15.3.3",
+    "next": "15.3.8",
     "nodemailer": "^8.0.9",
     "react": "19.0.0",
     "react-dom": "19.0.0",
