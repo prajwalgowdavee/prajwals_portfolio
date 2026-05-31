@@ -9,11 +9,14 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:3000`.
+## Required Dependencies Installation
 
-## Customize
+```bash
+npm install three motion resend
+```
 
-- Update section content in `app/page.tsx`.
-- Replace the photo placeholder in the About section.
-- Add your resume as `public/resume.pdf` so the CV button downloads it.
-- Add parallax effects around the existing `.section-shell` and `.visual-orbit` hooks.
+```bash
+npm install -D @types/three
+```
+
+Once installed, start the local development server and open `http://localhost:3000` to preview.

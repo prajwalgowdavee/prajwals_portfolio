@@ -18,6 +18,11 @@ export const metadata: Metadata = {
   title: "Prajwal Gowda D S | AI Engineer",
   description:
     "AI Engineer portfolio featuring machine learning, LLM, Python, and applied AI project work.",
+  icons: {
+    icon: "/images/favicon.png",
+    shortcut: "/images/favicon.png",
+    apple: "/images/favicon.png",
+  },
 };
 
 export default function RootLayout({
